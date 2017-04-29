@@ -14,6 +14,40 @@ Functions planned to complete right now:
 * Funds information search
 * Fund net asset value trend
 
+## Available APIs and Pages
+
+### APIs
+
+1. <code>/api/fund/search_fund</code>
+
+    Search funds that are related to the word.
+
+    Params:
+
+    <code>word</code>: key word of the fund, it can be the title, code or spell.
+
+    Example: <code>/api/fund/search_fund?word=161725</code>
+
+2. <code>/api/fund/fund_tendency_chart</code>
+
+    Get information of net asset value tendency of the fund.
+
+    Params:
+
+    <code>code</code>: the code of fund.
+
+    <code>time_interval</code>: time interval of the result, default is 30 days.
+
+    Example: <code>/api/fund/fund_tendency_chart?code=161725&time_interval=10</code>
+
+### Pages
+
+1. <code>/tendency_info.html</code>
+
+    This page is used to show the chart of tendency of the fund.
+
+    User input the code of fund and select the time interval, then generate the chart.
+
 ## Implement
 
 Using ExpressJS and MongoDB.

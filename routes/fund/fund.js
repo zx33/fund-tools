@@ -10,7 +10,39 @@ var fund_util = require('../../utils/fund_util');
 var common_util = require('../../utils/common');
 
 function search_fund_by_key(req, res) {
-    res.send(common_util.return_json_response('error', 'This function is not available temporarily', {}));
+    var word = req.query.word;
+    var url = "http://quotes.money.163.com/stocksearch/json.do?type=FN&count=10";
+    url += "&word=" + encodeURI(word);
+
+    function fund_search() {
+        var defer = Q.defer();
+        http.get(url, (response) => {
+            var html = "";
+            response.on('data', (data) => {
+                html += data;
+            });
+            response.on('end', () => {
+                var st = html.indexOf('[');
+                var en = html.indexOf(']');
+                var result = JSON.parse(html.substring(st, en+1));
+                defer.resolve(result);
+            });
+        }).on('error', () => {
+            defer.reject('500 Internal server error.');
+        });
+        return defer.promise;
+    }
+    
+    fund_search()
+        .then(
+            (result) => {
+                var ret = {
+                    fund_list: result
+                };
+                res.send(common_util.return_json_response('ok', '', ret));
+            },
+            common_util.on_error(res)
+        );
 }
 
 function get_fund_tendency_chart(req, res) {
