@@ -1,7 +1,11 @@
 # Logs
 logs
 *.log
+log
 npm-debug.log*
+
+# Congif
+conf
 
 # Runtime data
 pids
