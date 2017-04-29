@@ -15,6 +15,7 @@
             <option value="180">最近180天</option>
         </select>
         <input type="button" value="search" onclick="search_fund()">
+        <h1 id="fund_info"></h1>
         <div id="main" style="width: 600px; height: 400px;">Please input the fund code.</div>
         <script>
             function search_fund() {
@@ -46,6 +47,9 @@
                         date.reverse();
                         net_asset.reverse();
                         draw_chart(date, net_asset, other, dataMax, dataMin);
+                        $.get('/api/fund/search_fund?word=' + code, (data) => {
+                            $('#fund_info').html(data.result.fund_list[0].name);
+                        });
                     }
                 });
             }
