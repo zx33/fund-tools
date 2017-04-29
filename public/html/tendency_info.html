@@ -26,6 +26,7 @@
                     if (data.status == 'error') {
                         alert(data.msg);
                         $('#main').html("Error fund code.");
+                        $('#fund_info').html("");
                     } else {
                         var result = data.result.tendency;
                         var date = [];
