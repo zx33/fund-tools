@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>tendency_info</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/3.5.4/echarts.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <style>
+        </style>
+    </head>
+    <body>
+        <input id="fund_code" type="text" maxlength="6" style="width:300px;" onkeyup="this.value=this.value.replace(/\D/g,'')">
+        <select id="time_interval">
+            <option value="30" selected="selected">最近30天</option>
+            <option value="90">最近90天</option>
+            <option value="180">最近180天</option>
+        </select>
+        <input type="button" value="search" onclick="search_fund()">
+        <div id="main" style="width: 600px; height: 400px;">Please input the fund code.</div>
+        <script>
+            function search_fund() {
+                var code = $('#fund_code').val();
+                while (code.length < 6) code = 0 + code;
+                var time_interval = $('#time_interval').val();
+                $.get('/api/fund/fund_tendency_chart?code='+ code +'&time_interval=' + time_interval, (data) => {
+                    if (data.status == 'error') {
+                        alert(data.msg);
+                        $('#main').html("Error fund code.");
+                    } else {
+                        var result = data.result.tendency;
+                        var date = [];
+                        var net_asset = [];
+                        var other = {};
+                        var dataMax = 0;
+                        var dataMin = 10000;
+                        result.forEach((item) => {
+                            date.push(item['净值日期']);
+                            net_asset.push(item['单位净值']);
+                            dataMax = Math.max(dataMax, parseFloat(item['单位净值']));
+                            dataMin = Math.min(dataMin, parseFloat(item['单位净值']));
+                            var ret = {};
+                            ret['单位净值'] = item['单位净值'];
+                            ret['累计净值'] = item['累计净值'];
+                            ret['日增长率'] = item['日增长率'];
+                            other[item['净值日期']] = ret;
+                        });
+                        date.reverse();
+                        net_asset.reverse();
+                        draw_chart(date, net_asset, other, dataMax, dataMin);
+                    }
+                });
+            }
+            function get_params(href) {
+                try {
+                    var param_str = href.split('?')[1];
+                    return param_str.split('&').reduce(function(pre, cur){
+                        var arr = cur.split('=');
+                        var k = arr[0];
+                        var v = arr[1];
+                        pre[k] = v;
+                        return pre;
+                    }, {});
+                } catch (e) {
+                    return {}
+                }
+            }
+            function get_point_4_float(x) {
+                return parseInt(x*10000) / 10000;
+            }
+            function draw_chart(date, net_asset, other, dataMax, dataMin) {
+                var myChart = echarts.init(document.getElementById("main"));
+                var option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        // position: (pt) => {
+                        //     return [pt[0], '10%'];
+                        // },
+                        formatter: (params) => {
+                            var x = params[0].name;
+                            var s = '<div style="width:150px;display:block !important;"><div style="float:left;display:block !important;"><span style="font-size:14px;font-weight:bold;">'+ x +'</span>';
+                            s += '<br>单位净值:' + other[x]['单位净值'];
+                            s += '<br>累计净值:' + other[x]['累计净值'];
+                            s += '<br>日增长率:' + other[x]['日增长率'];
+                            s += '</span></div></div>';
+                            return s;
+                        },
+                    },
+                    title: {
+                        left: "center",
+                        text: "最近" + date.length + "天净值走势图"
+                    },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: date
+                    },
+                    yAxis: {
+                        type: 'value',
+                        min: get_point_4_float(dataMin / 1.005),
+                        max: get_point_4_float(dataMax * 1.005),
+                        boundaryGap: [0, '100%']
+                    },
+                    series: [
+                        {
+                            name: '单位净值',
+                            type: 'line',
+                            smooth: false,
+                            //symbol: 'none',
+                            showSymbol: false,
+                            sampling: 'average',
+                            itemStyle: {
+                                normal: {
+                                    color: 'rgb(255, 70, 131)'
+                                }
+                            },
+                            data: net_asset
+                        },
+                    ]
+                };
+                myChart.setOption(option);
+            }
+            // var url_params = get_params(window.location.href);
+            // var code = url_params.code || "";
+            // var time_interval = parseInt(url_params.time_interval) || 30;
+        </script>
+    </body>
+</html>
