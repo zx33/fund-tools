@@ -98,9 +98,14 @@ function get_fund_tendency_chart(req, res) {
         );
 }
 
+function get_300_500_today(req, res) {
+    
+}
+
 var get_map = [
     { cmd: '/search_fund', func: search_fund_by_key },
     { cmd: '/fund_tendency_chart', func: get_fund_tendency_chart },
+    { cmd: '/get_300_500', func: get_300_500_today },
 ];
 
 var post_map = [];
